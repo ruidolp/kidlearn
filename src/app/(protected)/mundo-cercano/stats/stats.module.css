@@ -1,0 +1,42 @@
+.table {
+  overflow: hidden;
+}
+
+.statImg {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--color-bg);
+}
+
+.statMeta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.sessionRow {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sessionDate {
+  flex: 1;
+  min-width: 140px;
+}
+
+.sessionMeta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+@media (max-width: 400px) {
+  .statMeta { gap: 0.5rem; }
+  .sessionMeta { gap: 0.5rem; }
+}

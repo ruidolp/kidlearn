@@ -1,0 +1,96 @@
+const es = {
+  // General
+  app_name: 'Mis Objetos',
+  save: 'Guardar',
+  cancel: 'Cancelar',
+  delete: 'Eliminar',
+  edit: 'Editar',
+  back: 'Volver',
+  loading: 'Cargando...',
+  error: 'Ocurrió un error',
+  confirm: 'Confirmar',
+
+  // Auth
+  login_title: 'Bienvenido',
+  login_subtitle: 'Ingresa tu email para continuar',
+  email_label: 'Correo electrónico',
+  email_placeholder: 'tu@email.com',
+  name_label: 'Tu nombre',
+  name_placeholder: '¿Cómo te llamas?',
+  login_btn: 'Entrar',
+  logout: 'Cerrar sesión',
+
+  // Dashboard
+  dashboard_title: 'Mis Juegos',
+  dashboard_subtitle: 'Elige un juego para jugar con tu hijo',
+  coming_soon: 'Próximamente',
+
+  // Mi Mundo Cercano
+  game_mc_name: 'Mi Mundo Cercano',
+  game_mc_desc: 'Aprende el nombre de los objetos de tu mundo',
+  collection_title: 'Mi Colección',
+  collection_empty: 'Aún no hay objetos. ¡Agrega el primero!',
+  add_object: 'Agregar objeto',
+  add_object_title: 'Nuevo objeto',
+  name_es_label: 'Nombre en español',
+  name_en_label: 'Name in English',
+  image_label: 'Imagen',
+  upload_image: 'Subir imagen',
+  take_photo: 'Tomar foto',
+  seed_badge: 'Ejemplo',
+  hint_title: '💡 Ideas para agregar',
+  hint_subtitle: 'Estos objetos son perfectos para aprender con tu hijo:',
+  hint_add: 'Agregar',
+  play_btn: 'Jugar',
+  stats_btn: 'Estadísticas',
+
+  // Juego
+  game_title: 'Mi Mundo Cercano',
+  game_question: '¿Dónde está...?',
+  replay_word: 'Repetir palabra',
+  correct: '¡Correcto!',
+  incorrect: 'Inténtalo de nuevo',
+  session_summary: 'Resumen',
+  session_correct: 'Al primer intento',
+  session_wrong: 'Errores',
+  session_total: 'Palabras',
+  play_again: 'Jugar de nuevo',
+  go_collection: 'Ir a la colección',
+  not_enough_objects: 'Necesitas al menos 2 objetos en tu colección para jugar.',
+  landscape_tip: 'Para una mejor experiencia, gira tu teléfono en horizontal.',
+  landscape_btn: 'Ya lo giré',
+
+  // Estadísticas
+  stats_title: 'Estadísticas',
+  stats_mastered: 'Dominadas',
+  stats_learning: 'En progreso',
+  stats_word: 'Palabra',
+  stats_impressions: 'Veces vista',
+  stats_correct: 'Aciertos',
+  stats_wrong: 'Errores',
+  stats_accuracy: 'Precisión',
+  stats_streak: 'Racha',
+  stats_mastered_badge: '¡Dominada!',
+  stats_no_data: 'Aún no has jugado. ¡Empieza ahora!',
+  stats_sessions: 'Sesiones jugadas',
+  stats_sessions_empty: 'No hay sesiones aún',
+  stats_session_date: 'Fecha',
+  stats_session_words: 'Palabras',
+  stats_session_first_try: 'Al primer intento',
+  stats_session_errors: 'Errores',
+
+  // Configuración
+  settings_title: 'Configuración',
+  settings_language: 'Idioma',
+  settings_theme: 'Color favorito',
+  settings_session: 'Objetos por sesión',
+  settings_session_help: 'Cuántos objetos practicar en cada partida',
+  theme_blue: 'Azul',
+  theme_pink: 'Rosado',
+  theme_green: 'Verde',
+  lang_es: 'Español',
+  lang_en: 'English',
+}
+
+export default es
+export type Translations = typeof es

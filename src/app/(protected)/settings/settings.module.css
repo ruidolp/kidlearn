@@ -1,0 +1,29 @@
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 600px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.themeBtn {
+  min-width: 130px;
+}
+
+.range {
+  flex: 1;
+  min-width: 160px;
+  accent-color: var(--color-primary);
+  height: 8px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.rangeValue {
+  min-width: 3ch;
+  text-align: center;
+}

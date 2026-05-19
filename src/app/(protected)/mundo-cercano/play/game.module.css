@@ -1,0 +1,119 @@
+.gameWrap {
+  min-height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 2rem;
+}
+
+.question {
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.wordTitle {
+  letter-spacing: -0.01em;
+}
+
+.options {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.5rem, 8vw, 4rem);
+  flex: 1;
+  padding: 1.5rem 1rem;
+  flex-wrap: wrap;
+}
+
+.optionBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease;
+  border-radius: 50%;
+}
+
+.optionBtn:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.optionBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.optionBtn:disabled {
+  cursor: default;
+}
+
+.optionWrong {
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-10px); }
+  40%       { transform: translateX(10px); }
+  60%       { transform: translateX(-8px); }
+  80%       { transform: translateX(8px); }
+}
+
+.circleImg {
+  width: clamp(120px, 35vw, 220px);
+  height: clamp(120px, 35vw, 220px);
+  border-width: 5px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.circleImg:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(74,144,217,0.2);
+}
+
+/* Resumen */
+.summary {
+  min-height: calc(100vh - 70px);
+  padding: 2rem 1rem;
+}
+
+.summaryCard {
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+}
+
+.summaryStats {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Landscape tip */
+.landscapeTip {
+  min-height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.rotateIcon {
+  font-size: 5rem;
+  animation: rotate 2s ease infinite;
+}
+
+@keyframes rotate {
+  0%   { transform: rotate(0deg); }
+  30%  { transform: rotate(90deg); }
+  70%  { transform: rotate(90deg); }
+  100% { transform: rotate(0deg); }
+}
