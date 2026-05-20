@@ -38,6 +38,7 @@ export function CollectionClient({ initialObjects, hints, lang, tr }: Props) {
   const [file, setFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
   const [hintPrefill, setHintPrefill] = useState<{ es: string; en: string } | null>(null)
+  const [showImagePicker, setShowImagePicker] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const cameraRef = useRef<HTMLInputElement>(null)
 
@@ -208,36 +209,31 @@ export function CollectionClient({ initialObjects, hints, lang, tr }: Props) {
                 />
               </div>
 
-              {/* Preview imagen */}
-              {preview && (
-                <div className={styles.previewWrap}>
-                  <Image src={preview} alt="Preview" fill style={{ objectFit: 'cover' }} />
-                </div>
-              )}
-
-              <div className="flex flex-gap-md">
-                <button
-                  type="button"
-                  className="btn btn--ghost"
-                  onClick={() => fileRef.current?.click()}
-                >
-                  🖼 {tr.upload_image}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn--ghost"
-                  onClick={() => cameraRef.current?.click()}
-                >
-                  📷 {tr.take_photo}
-                </button>
-              </div>
+              {/* Área de imagen */}
+              <button
+                type="button"
+                className={styles.imagePickerTrigger}
+                onClick={() => setShowImagePicker(true)}
+              >
+                {preview ? (
+                  <div className={styles.previewWrap} style={{ position: 'relative', width: '100%', paddingBottom: '60%' }}>
+                    <Image src={preview} alt="Preview" fill style={{ objectFit: 'cover' }} />
+                    <div className={styles.previewEditBadge}>✏️</div>
+                  </div>
+                ) : (
+                  <div className={styles.imagePickerEmpty}>
+                    <span className={styles.imagePickerIcon}>📷</span>
+                    <span className={styles.imagePickerLabel}>{tr.upload_image}</span>
+                  </div>
+                )}
+              </button>
 
               <input
                 ref={fileRef}
                 type="file"
                 accept="image/*"
                 style={{ display: 'none' }}
-                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+                onChange={(e) => { e.target.files?.[0] && handleFile(e.target.files[0]); setShowImagePicker(false) }}
               />
               <input
                 ref={cameraRef}
@@ -245,8 +241,41 @@ export function CollectionClient({ initialObjects, hints, lang, tr }: Props) {
                 accept="image/*"
                 capture="environment"
                 style={{ display: 'none' }}
-                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+                onChange={(e) => { e.target.files?.[0] && handleFile(e.target.files[0]); setShowImagePicker(false) }}
               />
+
+              {/* Action sheet para elegir fuente de imagen */}
+              {showImagePicker && (
+                <div className={styles.pickerOverlay} onClick={() => setShowImagePicker(false)}>
+                  <div className={styles.pickerSheet} onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      className={styles.pickerOption}
+                      onClick={() => { cameraRef.current?.click() }}
+                    >
+                      <span className={styles.pickerOptionIcon}>📷</span>
+                      <span>{tr.take_photo}</span>
+                    </button>
+                    <div className={styles.pickerDivider} />
+                    <button
+                      type="button"
+                      className={styles.pickerOption}
+                      onClick={() => { fileRef.current?.click() }}
+                    >
+                      <span className={styles.pickerOptionIcon}>🖼️</span>
+                      <span>{tr.upload_image}</span>
+                    </button>
+                    <div className={styles.pickerDivider} />
+                    <button
+                      type="button"
+                      className={`${styles.pickerOption} ${styles.pickerCancel}`}
+                      onClick={() => setShowImagePicker(false)}
+                    >
+                      {tr.cancel}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="flex flex-gap-md mt-sm">
                 <button type="button" className="btn btn--ghost" onClick={resetForm}>

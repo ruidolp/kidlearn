@@ -1,10 +1,15 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { getSession } from '@/lib/auth'
 import '@/styles/globals.css'
 
 export const metadata: Metadata = {
   title: 'Mis Objetos',
   description: 'Aprende jugando con tu hijo',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
