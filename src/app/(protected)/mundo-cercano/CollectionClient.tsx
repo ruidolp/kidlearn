@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import { Language, Translations } from '@/i18n'
 import styles from './collection.module.css'
@@ -10,7 +10,8 @@ interface Obj {
   name_es: string
   name_en: string
   image_path: string
-  is_seed: boolean
+  audio_url_es: string | null
+  audio_url_en: string | null
 }
 
 interface Hint {
@@ -28,6 +29,8 @@ interface Props {
   tr: Translations
 }
 
+type RecordState = 'idle' | 'recording' | 'recorded'
+
 export function CollectionClient({ initialObjects, hints, lang, tr }: Props) {
   const [objects, setObjects] = useState<Obj[]>(initialObjects)
   const [showForm, setShowForm] = useState(false)
@@ -39,10 +42,29 @@ export function CollectionClient({ initialObjects, hints, lang, tr }: Props) {
   const [saving, setSaving] = useState(false)
   const [hintPrefill, setHintPrefill] = useState<{ es: string; en: string } | null>(null)
   const [showImagePicker, setShowImagePicker] = useState(false)
+
+  // Estado de grabación de voz
+  const [recordState, setRecordState] = useState<RecordState>('idle')
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
+  const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const chunksRef = useRef<Blob[]>([])
+
   const fileRef = useRef<HTMLInputElement>(null)
   const cameraRef = useRef<HTMLInputElement>(null)
 
   const getName = (obj: Obj) => lang === 'es' ? obj.name_es : obj.name_en
+  const activeName = lang === 'es' ? nameEs : nameEn
+
+  function setActiveName(v: string) {
+    if (lang === 'es') {
+      setNameEs(v)
+      if (!hintPrefill) setNameEn(v)
+    } else {
+      setNameEn(v)
+      if (!hintPrefill) setNameEs(v)
+    }
+  }
 
   function handleFile(f: File) {
     setFile(f)
@@ -57,23 +79,78 @@ export function CollectionClient({ initialObjects, hints, lang, tr }: Props) {
     setShowForm(true)
   }
 
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      chunksRef.current = []
+      const recorder = new MediaRecorder(stream)
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data)
+      }
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+        setAudioBlob(blob)
+        setAudioPreviewUrl(URL.createObjectURL(blob))
+        stream.getTracks().forEach((t) => t.stop())
+        setRecordState('recorded')
+      }
+      mediaRecorderRef.current = recorder
+      recorder.start()
+      setRecordState('recording')
+    } catch {
+      alert(tr.mic_error)
+    }
+  }, [tr.mic_error])
+
+  function stopRecording() {
+    mediaRecorderRef.current?.stop()
+  }
+
+  function reRecord() {
+    if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl)
+    setAudioBlob(null)
+    setAudioPreviewUrl(null)
+    setRecordState('idle')
+  }
+
+  function playPreview() {
+    if (!audioPreviewUrl) return
+    new Audio(audioPreviewUrl).play()
+  }
+
   function resetForm() {
+    if (recordState === 'recording') mediaRecorderRef.current?.stop()
+    if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl)
     setNameEs('')
     setNameEn('')
     setPreview(null)
     setFile(null)
     setHintPrefill(null)
     setShowForm(false)
+    setAudioBlob(null)
+    setAudioPreviewUrl(null)
+    setRecordState('idle')
   }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     if (!file) return
     setSaving(true)
+
     const fd = new FormData()
-    fd.append('name_es', nameEs)
-    fd.append('name_en', nameEn)
+    fd.append('lang', lang)
     fd.append('image', file)
+
+    if (hintPrefill) {
+      fd.append('name_es', nameEs)
+      fd.append('name_en', nameEn)
+    } else {
+      fd.append(lang === 'es' ? 'name_es' : 'name_en', activeName)
+    }
+
+    if (audioBlob) {
+      fd.append('audio', audioBlob, 'recording.webm')
+    }
 
     const res = await fetch('/api/objects', { method: 'POST', body: fd })
     if (res.ok) {
@@ -89,7 +166,6 @@ export function CollectionClient({ initialObjects, hints, lang, tr }: Props) {
     setObjects((prev) => prev.filter((o) => o.id !== id))
   }
 
-  // Agrupar hints por categoría
   const hintsByCategory = hints.reduce<Record<string, Hint[]>>((acc, h) => {
     const cat = lang === 'es' ? h.category_es : h.category_en
     if (!acc[cat]) acc[cat] = []
@@ -97,9 +173,10 @@ export function CollectionClient({ initialObjects, hints, lang, tr }: Props) {
     return acc
   }, {})
 
+  const nameLabel = lang === 'es' ? tr.name_es_label : tr.name_en_label
+
   return (
     <>
-      {/* Grid de objetos */}
       {objects.length === 0 ? (
         <div className="empty-state">
           <span className="empty-state__icon">📦</span>
@@ -122,22 +199,16 @@ export function CollectionClient({ initialObjects, hints, lang, tr }: Props) {
               <p className="text-body text-center" style={{ marginTop: '0.5rem' }}>
                 {getName(obj)}
               </p>
-              {obj.is_seed && (
-                <span className="badge badge--accent">{tr.seed_badge}</span>
-              )}
-              {!obj.is_seed && (
-                <button
-                  className={styles.deleteBtn}
-                  onClick={() => handleDelete(obj.id)}
-                  title="Eliminar"
-                >
-                  ✕
-                </button>
-              )}
+              <button
+                className={styles.deleteBtn}
+                onClick={() => handleDelete(obj.id)}
+                title="Eliminar"
+              >
+                ✕
+              </button>
             </div>
           ))}
 
-          {/* Tarjeta agregar */}
           <button
             className={`card card--hover ${styles.addCard}`}
             onClick={() => setShowForm(true)}
@@ -148,14 +219,12 @@ export function CollectionClient({ initialObjects, hints, lang, tr }: Props) {
         </div>
       )}
 
-      {/* Botón hints */}
       <div className="flex flex-center mt-xl">
         <button className="btn btn--ghost" onClick={() => setShowHints(!showHints)}>
           💡 {tr.hint_title}
         </button>
       </div>
 
-      {/* Panel hints */}
       {showHints && (
         <div className={`card p-card mt-md ${styles.hintsPanel}`}>
           <p className="text-body text-light mb-md">{tr.hint_subtitle}</p>
@@ -181,35 +250,75 @@ export function CollectionClient({ initialObjects, hints, lang, tr }: Props) {
         </div>
       )}
 
-      {/* Modal agregar objeto */}
       {showForm && (
         <div className={styles.modalOverlay} onClick={resetForm}>
           <div className={`card p-lg ${styles.modal}`} onClick={(e) => e.stopPropagation()}>
             <h2 className="text-heading mb-lg">{tr.add_object_title}</h2>
 
             <form onSubmit={handleSave} className={styles.form}>
+              {/* Solo el idioma activo */}
               <div className="field">
-                <label>{tr.name_es_label}</label>
+                <label>{nameLabel}</label>
                 <input
                   className="input"
-                  value={nameEs}
-                  onChange={(e) => setNameEs(e.target.value)}
+                  value={activeName}
+                  onChange={(e) => setActiveName(e.target.value)}
                   required
-                  placeholder="ej: Zapatilla"
-                />
-              </div>
-              <div className="field">
-                <label>{tr.name_en_label}</label>
-                <input
-                  className="input"
-                  value={nameEn}
-                  onChange={(e) => setNameEn(e.target.value)}
-                  required
-                  placeholder="eg: Sneaker"
+                  placeholder={lang === 'es' ? 'ej: Zapatilla' : 'eg: Sneaker'}
                 />
               </div>
 
-              {/* Área de imagen */}
+              {/* Grabación de voz */}
+              <div className={styles.recordSection}>
+                <span className={styles.recordLabel}>{tr.record_audio_label}</span>
+
+                {recordState === 'idle' && (
+                  <div className={styles.recordControls}>
+                    <button
+                      type="button"
+                      className={styles.recordBtn}
+                      onClick={startRecording}
+                    >
+                      🎤 {tr.record_btn}
+                    </button>
+                    <span className={styles.recordHint}>{tr.recording_hint}</span>
+                  </div>
+                )}
+
+                {recordState === 'recording' && (
+                  <div className={styles.recordControls}>
+                    <div className={styles.recordingDot} />
+                    <button
+                      type="button"
+                      className={`${styles.recordBtn} ${styles['recordBtn--stop']}`}
+                      onClick={stopRecording}
+                    >
+                      ⏹ {tr.stop_btn}
+                    </button>
+                  </div>
+                )}
+
+                {recordState === 'recorded' && (
+                  <div className={styles.recordedControls}>
+                    <button
+                      type="button"
+                      className={styles.recordBtn}
+                      onClick={playPreview}
+                    >
+                      ▶ {tr.play_recording}
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.recordBtn} ${styles['recordBtn--stop']}`}
+                      onClick={reRecord}
+                    >
+                      🔄 {tr.re_record_btn}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Imagen */}
               <button
                 type="button"
                 className={styles.imagePickerTrigger}
@@ -244,7 +353,6 @@ export function CollectionClient({ initialObjects, hints, lang, tr }: Props) {
                 onChange={(e) => { e.target.files?.[0] && handleFile(e.target.files[0]); setShowImagePicker(false) }}
               />
 
-              {/* Action sheet para elegir fuente de imagen */}
               {showImagePicker && (
                 <div className={styles.pickerOverlay} onClick={() => setShowImagePicker(false)}>
                   <div className={styles.pickerSheet} onClick={(e) => e.stopPropagation()}>
@@ -284,7 +392,7 @@ export function CollectionClient({ initialObjects, hints, lang, tr }: Props) {
                 <button
                   type="submit"
                   className="btn btn--primary"
-                  disabled={saving || !file || !nameEs || !nameEn}
+                  disabled={saving || !file || !activeName}
                 >
                   {saving ? tr.loading : tr.save}
                 </button>

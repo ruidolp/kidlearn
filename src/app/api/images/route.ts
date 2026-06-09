@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
-
-const ALLOWED_PREFIX = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/`
+import { supabase, STORAGE_BUCKET } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
@@ -10,23 +9,29 @@ export async function GET(req: NextRequest) {
   const k = req.nextUrl.searchParams.get('k')
   if (!k) return new NextResponse('Parámetro requerido', { status: 400 })
 
-  let url: string
+  let path: string
   try {
-    url = Buffer.from(k, 'base64url').toString('utf-8')
+    path = Buffer.from(k, 'base64url').toString('utf-8')
   } catch {
     return new NextResponse('Parámetro inválido', { status: 400 })
   }
 
-  if (!url.startsWith(ALLOWED_PREFIX)) {
-    return new NextResponse('URL no permitida', { status: 403 })
+  // Rutas locales de seed se sirven directamente
+  if (path.startsWith('/')) {
+    return NextResponse.redirect(new URL(path, req.url))
   }
 
-  const upstream = await fetch(url)
-  if (!upstream.ok) return new NextResponse('Error al obtener imagen', { status: 502 })
+  // URLs absolutas legacy (ej. Cloudinary) — redirigir directamente
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return NextResponse.redirect(path)
+  }
 
-  return new NextResponse(upstream.body, {
+  const { data, error } = await supabase.storage.from(STORAGE_BUCKET).download(path)
+  if (error || !data) return new NextResponse('Imagen no encontrada', { status: 404 })
+
+  return new NextResponse(data, {
     headers: {
-      'Content-Type': upstream.headers.get('content-type') ?? 'image/jpeg',
+      'Content-Type': data.type || 'image/jpeg',
       'Cache-Control': 'private, max-age=3600',
     },
   })

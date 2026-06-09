@@ -13,6 +13,8 @@ interface Obj {
   name_es: string
   name_en: string
   image_path: string
+  audio_url_es: string | null
+  audio_url_en: string | null
 }
 
 interface GameState {
@@ -81,7 +83,8 @@ export function GameClient({ lang, tr }: Props) {
     if (phase !== 'playing' || !game) return
     const obj = game.objects[currentIndex]
     const word = lang === 'es' ? obj.name_es : obj.name_en
-    const timer = setTimeout(() => speak(word), 400)
+    const audioUrl = lang === 'es' ? obj.audio_url_es : obj.audio_url_en
+    const timer = setTimeout(() => speak(word, audioUrl, 3), 400)
     return () => clearTimeout(timer)
   }, [phase, currentIndex, game, lang, speak])
 
@@ -257,7 +260,7 @@ export function GameClient({ lang, tr }: Props) {
           <h2 className={`text-display text-primary ${styles.wordTitle}`}>{currentWord}</h2>
           <button
             className="btn btn--icon"
-            onClick={() => speak(currentWord)}
+            onClick={() => speak(currentWord, lang === 'es' ? currentObj.audio_url_es : currentObj.audio_url_en, 3)}
             title={tr.replay_word}
           >
             🔊

@@ -1,0 +1,6 @@
+-- Contraseña hasheada (null para usuarios Google)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;
+
+-- Google OAuth
+ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT UNIQUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;

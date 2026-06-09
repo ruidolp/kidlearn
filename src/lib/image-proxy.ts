@@ -1,4 +1,5 @@
 export function toProxyUrl(imagePath: string): string {
-  if (!imagePath.startsWith('https://res.cloudinary.com/')) return imagePath
+  // Rutas locales de seed no necesitan proxy
+  if (imagePath.startsWith('/')) return imagePath
   return `/api/images?k=${Buffer.from(imagePath).toString('base64url')}`
 }

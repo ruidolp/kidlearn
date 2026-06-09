@@ -204,3 +204,79 @@
   justify-content: center;
   font-weight: 800;
 }
+
+/* Sección de grabación de voz */
+.recordSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.recordLabel {
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.recordControls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.recordBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.2rem;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+.recordBtn:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+.recordBtn--stop {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+.recordBtn--stop:hover {
+  background: var(--color-error);
+  color: #fff;
+}
+
+.recordingDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-error);
+  animation: pulse 1s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.75); }
+}
+
+.recordedControls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.recordHint {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+}

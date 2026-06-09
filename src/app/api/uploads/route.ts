@@ -1,13 +1,11 @@
-import { v2 as cloudinary } from 'cloudinary';
 import { NextRequest, NextResponse } from 'next/server';
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import { getSession } from '@/lib/auth';
+import { supabase, STORAGE_BUCKET } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+
   const formData = await req.formData();
   const file = formData.get('file') as File | null;
 
@@ -15,19 +13,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No se recibió ningún archivo' }, { status: 400 });
   }
 
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
+  const ext = file.name.split('.').pop() ?? 'jpg';
+  const path = `${session.userId}/${crypto.randomUUID()}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
 
-  const result = await new Promise<{ secure_url: string; public_id: string }>(
-    (resolve, reject) => {
-      cloudinary.uploader
-        .upload_stream({ folder: 'misobjetos' }, (error, result) => {
-          if (error || !result) return reject(error);
-          resolve(result);
-        })
-        .end(buffer);
-    }
-  );
+  const { error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(path, buffer, { contentType: file.type, upsert: false });
 
-  return NextResponse.json({ url: result.secure_url, public_id: result.public_id });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ path });
 }

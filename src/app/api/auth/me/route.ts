@@ -48,6 +48,7 @@ export async function PATCH(req: NextRequest) {
   const res = NextResponse.json({ ok: true })
   res.cookies.set(COOKIE_NAME, newToken, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 30,
     path: '/',

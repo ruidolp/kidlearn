@@ -4,6 +4,7 @@ import { Language } from '@/i18n'
 import { CollectionClient } from './CollectionClient'
 import pool from '@/lib/db'
 import Link from 'next/link'
+import { toProxyUrl } from '@/lib/image-proxy'
 
 export default async function MundoCercanoPage() {
   const session = await getSession()
@@ -11,7 +12,7 @@ export default async function MundoCercanoPage() {
   const lang = session!.language as Language
 
   const { rows: objects } = await pool.query(
-    `SELECT * FROM objects WHERE user_id = $1 OR is_seed = TRUE ORDER BY is_seed DESC, created_at ASC`,
+    `SELECT * FROM objects WHERE user_id = $1 ORDER BY created_at ASC`,
     [session!.userId]
   )
 
@@ -37,7 +38,7 @@ export default async function MundoCercanoPage() {
       </div>
 
       <CollectionClient
-        initialObjects={objects}
+        initialObjects={objects.map((o) => ({ ...o, image_path: toProxyUrl(o.image_path) }))}
         hints={hints}
         lang={lang}
         tr={tr}

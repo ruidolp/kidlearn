@@ -8,6 +8,13 @@ export async function POST(req: NextRequest) {
 
   const { sessionId, objectId, correct } = await req.json()
 
+  // Verificar que la sesión pertenece al usuario autenticado
+  const { rowCount: owned } = await pool.query(
+    'SELECT 1 FROM game_sessions WHERE id = $1 AND user_id = $2',
+    [sessionId, session.userId]
+  )
+  if (!owned) return NextResponse.json({ error: 'Sesión no encontrada' }, { status: 404 })
+
   // Registrar resultado individual
   await pool.query(
     `INSERT INTO game_results (session_id, object_id, correct) VALUES ($1, $2, $3)`,
