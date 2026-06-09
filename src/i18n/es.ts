@@ -15,7 +15,7 @@ const es = {
   login_subtitle: 'Ingresa tu email para continuar',
   email_label: 'Correo electrónico',
   email_placeholder: 'tu@email.com',
-  name_label: 'Tu nombre',
+  auth_name_label: 'Tu nombre',
   name_placeholder: '¿Cómo te llamas?',
   login_btn: 'Entrar',
   logout: 'Cerrar sesión',

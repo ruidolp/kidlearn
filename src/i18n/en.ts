@@ -17,7 +17,7 @@ const en: Translations = {
   login_subtitle: 'Enter your email to continue',
   email_label: 'Email address',
   email_placeholder: 'you@email.com',
-  name_label: 'Your name',
+  auth_name_label: 'Your name',
   name_placeholder: 'What\'s your name?',
   login_btn: 'Enter',
   logout: 'Log out',
